@@ -2,13 +2,13 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="stylesheet" href="./reset.css">
+    <link rel="stylesheet" href="./reset.css" />
     <link rel="stylesheet" href="./style.css" />
     <title>Now Playing Movies</title>
   </head>
   <body>
     <header class="header">
-      <h1>Now Playing Movies</h1>
+      <h1 class="header-text">Now Playing Movies</h1>
       <div class="search-elements-wrapper">
         <div class="search-box-wrapper">
           <input id="searchBox" type="text" class="search-box" value="" />
@@ -18,8 +18,10 @@
         </div>
       </div>
     </header>
-    <ul id="moviesList"></ul>
-    <pre id="jsonData"></pre>
+
+    <div class="movie-list-wrapper">
+      <ul id="moviesList" class="movie-list"></ul>
+    </div>
     <div class="pagination-elements">
       <div id="pagination" class="pagination-wrapper"></div>
       <div id="nextButton" class="next-button-wrapper"></div>

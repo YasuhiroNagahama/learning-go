@@ -14,11 +14,12 @@ type ApiResponse struct {
 }
 
 type Movie struct {
-	Title       string `json:"title"`
-	Overview    string `json:"overview"`
-	Id          int    `json:"id"`
-	PosterPath  string `json:"poster_path"`
-	ReleaseDate string `json:"release_date"`
+	Title         string `json:"title"`
+	OriginalTitle string `json:"original_title"`
+	Overview      string `json:"overview"`
+	Id            int    `json:"id"`
+	PosterPath    string `json:"poster_path"`
+	ReleaseDate   string `json:"release_date"`
 }
 
 // TMDB APIから映画の一覧を取得するハンドラ
@@ -103,14 +104,14 @@ func main() {
 	http.HandleFunc("/api/total_pages", getTotalPagesHandler)
 	http.HandleFunc("/api/search", getSearchHandler)
 
-	// 静的ファイルのディレクトリを取得
-	staticDir := "./"
+	// // 静的ファイルのディレクトリを取得
+	// staticDir := "./"
 
-	// 静的ファイルを提供するためのハンドラを作成
-	fs := http.FileServer(http.Dir(staticDir))
+	// // 静的ファイルを提供するためのハンドラを作成
+	// fs := http.FileServer(http.Dir(staticDir))
 
-	// ハンドラをルートURLにマップ
-	http.Handle("/", fs)
+	// // ハンドラをルートURLにマップ
+	// http.Handle("/", fs)
 
 	// // サーバーをポート8000で起動
 	log.Println("Starting server on :8000...")

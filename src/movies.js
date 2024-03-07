@@ -1,7 +1,7 @@
 window.onload = function () {
   const pageId = "1";
 
-  this.updateResult(pageId);
+  updateResult(pageId);
 };
 
 async function getTotalPages() {
@@ -15,49 +15,24 @@ async function getTotalPages() {
   }
 }
 
-function searchButtonHandler() {
-  const searchButton = document.getElementById("searchButton");
+function getMovieInfoUrl(id, originalTitle) {
+  const formattedTitle = originalTitle.toLowerCase().replaceAll(" ", "-");
 
-  searchButton.addEventListener("click", async () => {
-    const searchBox = document.getElementById("searchBox");
-    const inputValue = searchBox.value;
-    console.log(inputValue);
+  return `https://www.themoviedb.org/movie/${id}-${formattedTitle}?language=ja`;
+}
 
-    const totalPages = await getTotalPages();
-
-    try {
-      for (let i = 1; i <= totalPages; i++) {
-        const pageNumber = String(i);
-
-        fetch(`http://localhost:8000/api/movies?page=${pageNumber}`)
-          .then((response) => response.json())
-          .then((data) => {
-            data.forEach((movie) => {
-              const title = movie.title;
-
-              // 現在のコードは、inputValueがアルファベットや英語の場合
-              // 大文字小文字の区別を区別している => d != D
-              if (title.includes(inputValue)) {
-                console.log(
-                  "タイトル:" + title + ", " + "ページ:" + pageNumber
-                );
-              }
-            });
-          })
-          .catch((error) => console.error("Error:", error));
-      }
-    } catch (error) {
-      console.error("Error fetching search:", error);
-      return 0;
-    }
-  });
+function getMovieImage(path) {
+  return `https://image.tmdb.org/t/p/w300${path}`;
 }
 
 function getMovieElement(movie) {
-  return `<li>
-    <div class="movie-element-wrapper">
+  const movieInfoUrl = getMovieInfoUrl(movie.id, movie.original_title);
+  const movieImageUrl = getMovieImage(movie.poster_path);
+
+  return `<li class="movie-item">
+    <div class="movie-elements-wrapper">
       <div class="movie-image-wrapper">
-        <img src="https://image.tmdb.org/t/p/w300${movie.poster_path}" class="movie-image">
+        <img src="${movieImageUrl}" alt="${movie.title}" class="movie-image">
       </div>
       <div class="movie-title-wrapper">
         <p class="movie-title">${movie.title}</p>
@@ -69,6 +44,14 @@ function getMovieElement(movie) {
   </li>`;
 }
 
+function getPageButtonElement(pageNumber) {
+  const page = String(pageNumber);
+
+  return `<div class="page-button-wrapper" id="${page}">
+            <button class="page-button">${page}</button>
+          </div>`;
+}
+
 function updateResult(pageId) {
   fetch(`http://localhost:8000/api/movies?page=${pageId}`)
     .then((response) => response.json())
@@ -76,36 +59,10 @@ function updateResult(pageId) {
       const list = document.getElementById("moviesList");
       list.innerHTML = ``;
       data.forEach((movie) => {
-        list.innerHTML += this.getMovieElement(movie);
-        // const item = document.createElement("li");
-        // item.textContent = movie.title;
-        // list.appendChild(item);
+        list.innerHTML += getMovieElement(movie);
       });
     })
     .catch((error) => console.error("Error:", error));
-}
-
-function paginationHandler() {
-  console.log(1);
-  const pageButtonWrappers = document.querySelectorAll(".page-button-wrapper");
-
-  for (let i = 0; i < pageButtonWrappers.length; i++) {
-    const pageButtonWrapper = pageButtonWrappers[i];
-
-    pageButtonWrapper.addEventListener("click", () => {
-      const pageId = pageButtonWrapper.id;
-
-      this.updateResult(pageId);
-    });
-  }
-}
-
-function getPageButtonElement(pageNumber) {
-  const page = String(pageNumber);
-
-  return `<div class="page-button-wrapper" id="${page}">
-            <button class="page-button">${page}</button>
-          </div>`;
 }
 
 async function createPagination() {
@@ -149,6 +106,61 @@ function renderPagination(startPage, endPage) {
   for (let i = startPage; i <= endPage; i++) {
     const pageButton = getPageButtonElement(i);
     paginationWrapper.innerHTML += pageButton;
+  }
+}
+
+// ハンドラー
+
+function searchButtonHandler() {
+  const searchButton = document.getElementById("searchButton");
+
+  searchButton.addEventListener("click", async () => {
+    const searchBox = document.getElementById("searchBox");
+    const inputValue = searchBox.value;
+    console.log(inputValue);
+
+    const totalPages = await getTotalPages();
+
+    try {
+      for (let i = 1; i <= totalPages; i++) {
+        const pageNumber = String(i);
+
+        fetch(`http://localhost:8000/api/movies?page=${pageNumber}`)
+          .then((response) => response.json())
+          .then((data) => {
+            data.forEach((movie) => {
+              const title = movie.title;
+
+              // 現在のコードは、inputValueがアルファベットや英語の場合
+              // 大文字小文字の区別を区別している => d != D
+              if (title.includes(inputValue)) {
+                console.log(
+                  "タイトル:" + title + ", " + "ページ:" + pageNumber
+                );
+              }
+            });
+          })
+          .catch((error) => console.error("Error:", error));
+      }
+    } catch (error) {
+      console.error("Error fetching search:", error);
+      return 0;
+    }
+  });
+}
+
+function paginationHandler() {
+  console.log(1);
+  const pageButtonWrappers = document.querySelectorAll(".page-button-wrapper");
+
+  for (let i = 0; i < pageButtonWrappers.length; i++) {
+    const pageButtonWrapper = pageButtonWrappers[i];
+
+    pageButtonWrapper.addEventListener("click", () => {
+      const pageId = pageButtonWrapper.id;
+
+      updateResult(pageId);
+    });
   }
 }
 
