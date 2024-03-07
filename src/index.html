@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="./reset.css">
+    <link rel="stylesheet" href="./style.css" />
+    <title>Now Playing Movies</title>
+  </head>
+  <body>
+    <header class="header">
+      <h1>Now Playing Movies</h1>
+      <div class="search-elements-wrapper">
+        <div class="search-box-wrapper">
+          <input id="searchBox" type="text" class="search-box" value="" />
+        </div>
+        <div id="searchButton" class="search-button-wrapper">
+          <p class="search-button">&#x1f50d;</p>
+        </div>
+      </div>
+    </header>
+    <ul id="moviesList"></ul>
+    <pre id="jsonData"></pre>
+    <div class="pagination-elements">
+      <div id="pagination" class="pagination-wrapper"></div>
+      <div id="nextButton" class="next-button-wrapper"></div>
+    </div>
+
+    <script src="movies.js"></script>
+  </body>
+</html>
