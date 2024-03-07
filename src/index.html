@@ -8,7 +8,7 @@
   </head>
   <body>
     <header class="header">
-      <h1 class="header-text">Now Playing Movies</h1>
+      <h1 class="title">Now Playing Movies</h1>
       <div class="search-elements-wrapper">
         <div class="search-box-wrapper">
           <input id="searchBox" type="text" class="search-box" value="" />
@@ -23,8 +23,13 @@
       <ul id="moviesList" class="movie-list"></ul>
     </div>
     <div class="pagination-elements">
+      <div id="backButton" class="move-button-wrapper"></div>
       <div id="pagination" class="pagination-wrapper"></div>
-      <div id="nextButton" class="next-button-wrapper"></div>
+      <div id="nextButton" class="move-button-wrapper"></div>
+    </div>
+    <div class="search-result-list-wrapper">
+      <h1 class="title">Search Results</h1>
+      <ul id="searchList" class="movie-list"></ul>
     </div>
 
     <script src="movies.js"></script>

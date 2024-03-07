@@ -30,17 +30,19 @@ function getMovieElement(movie) {
   const movieImageUrl = getMovieImage(movie.poster_path);
 
   return `<li class="movie-item">
-    <div class="movie-elements-wrapper">
-      <div class="movie-image-wrapper">
-        <img src="${movieImageUrl}" alt="${movie.title}" class="movie-image">
+    <a href="${movieInfoUrl}" class="movie-info-url" target="_blank">
+      <div class="movie-elements-wrapper">
+        <div class="movie-image-wrapper">
+          <img src="${movieImageUrl}" alt="${movie.title}" class="movie-image">
+        </div>
+        <div class="movie-title-wrapper">
+          <p class="movie-title">${movie.title}</p>
+        </div>
+        <div class="movie-release-date-wrapper">
+          <p class="movie-release-date">${movie.release_date}</p>
+        </div>
       </div>
-      <div class="movie-title-wrapper">
-        <p class="movie-title">${movie.title}</p>
-      </div>
-      <div class="movie-release-date-wrapper">
-        <p class="movie-release-date">${movie.release_date}</p>
-      </div>
-    </div>
+    </a>
   </li>`;
 }
 
@@ -52,52 +54,47 @@ function getPageButtonElement(pageNumber) {
           </div>`;
 }
 
+function getNextButton() {
+  return `<button class="move-button next-button">></button>`;
+}
+
+function getBackButton() {
+  return `<button class="move-button next-button"><</button>`;
+}
+
 function updateResult(pageId) {
-  fetch(`http://localhost:8000/api/movies?page=${pageId}`)
-    .then((response) => response.json())
-    .then((data) => {
-      const list = document.getElementById("moviesList");
-      list.innerHTML = ``;
-      data.forEach((movie) => {
-        list.innerHTML += getMovieElement(movie);
+  try {
+    fetch(`http://localhost:8000/api/movies?page=${pageId}`)
+      .then((response) => response.json())
+      .then((data) => {
+        const list = document.getElementById("moviesList");
+        list.innerHTML = ``;
+        data.forEach((movie) => {
+          list.innerHTML += getMovieElement(movie);
+        });
       });
-    })
-    .catch((error) => console.error("Error:", error));
+  } catch (error) {
+    console.error("Error:", error);
+  }
 }
 
 async function createPagination() {
-  const paginationWrapper = document.getElementById("pagination");
-  paginationWrapper.innerHTML = ""; // ページネーションを再描画する前にクリア
+  const totalPages = await getTotalPages(); // すべてのページを取得
+  const maxButtons = 10; // ボタンの最大数を定義
 
-  // 総ページ数を取得
-  const totalPages = await getTotalPages();
-
-  // 10個のページネーションを作成
-  const maxButtons = 10;
-  let startPage = 1;
-  let endPage = Math.min(totalPages, startPage + maxButtons - 1);
-
-  const nextButtonWrapper = document.getElementById("nextButton");
-  // 「次へ」ボタンを作成
-  const nextPageButton = document.createElement("button");
-  nextPageButton.classList.add("next-button");
-  nextPageButton.textContent = ">";
-
-  nextPageButton.addEventListener("click", () => {
-    if (endPage < totalPages) {
-      startPage = endPage + 1;
-      endPage = Math.min(totalPages, startPage + maxButtons - 1);
-      renderPagination(startPage, endPage);
-      paginationHandler();
-    }
-  });
-
-  nextButtonWrapper.appendChild(nextPageButton);
+  const startPage = 1;
+  const endPage = Math.min(totalPages, startPage + maxButtons - 1);
 
   // ページネーションを初回描画
   renderPagination(startPage, endPage);
   paginationHandler();
+
+  renderBackButton();
+  renderNextButton();
+  moveButtonHandler(startPage, endPage, totalPages, maxButtons);
 }
+
+// レンダー
 
 function renderPagination(startPage, endPage) {
   const paginationWrapper = document.getElementById("pagination");
@@ -109,6 +106,20 @@ function renderPagination(startPage, endPage) {
   }
 }
 
+function renderNextButton() {
+  const nextButtonWrapper = document.getElementById("nextButton");
+  const nextButton = getNextButton();
+
+  nextButtonWrapper.innerHTML = nextButton;
+}
+
+function renderBackButton() {
+  const backButtonWrapper = document.getElementById("backButton");
+  const backButton = getBackButton();
+
+  backButtonWrapper.innerHTML = backButton;
+}
+
 // ハンドラー
 
 function searchButtonHandler() {
@@ -116,10 +127,11 @@ function searchButtonHandler() {
 
   searchButton.addEventListener("click", async () => {
     const searchBox = document.getElementById("searchBox");
-    const inputValue = searchBox.value;
-    console.log(inputValue);
-
+    const searchContent = searchBox.value.toLowerCase();
     const totalPages = await getTotalPages();
+
+    const searchList = document.getElementById("searchList");
+    searchBox.innerHTML = ``;
 
     try {
       for (let i = 1; i <= totalPages; i++) {
@@ -129,13 +141,12 @@ function searchButtonHandler() {
           .then((response) => response.json())
           .then((data) => {
             data.forEach((movie) => {
-              const title = movie.title;
+              const formattedTitle = movie.title.toLowerCase();
 
-              // 現在のコードは、inputValueがアルファベットや英語の場合
-              // 大文字小文字の区別を区別している => d != D
-              if (title.includes(inputValue)) {
+              if (formattedTitle.includes(searchContent)) {
+                searchList.innerHTML += getMovieElement(movie);
                 console.log(
-                  "タイトル:" + title + ", " + "ページ:" + pageNumber
+                  "タイトル:" + movie.title + ", " + "ページ:" + pageNumber
                 );
               }
             });
@@ -150,7 +161,6 @@ function searchButtonHandler() {
 }
 
 function paginationHandler() {
-  console.log(1);
   const pageButtonWrappers = document.querySelectorAll(".page-button-wrapper");
 
   for (let i = 0; i < pageButtonWrappers.length; i++) {
@@ -162,6 +172,36 @@ function paginationHandler() {
       updateResult(pageId);
     });
   }
+}
+
+function moveButtonHandler(start, end, totalPages, maxButtons) {
+  let startPage = start;
+  let endPage = end;
+
+  const backButtonWrapper = document.getElementById("backButton");
+  const nextButtonWrapper = document.getElementById("nextButton");
+
+  backButtonWrapper.addEventListener("click", () => {
+    if (startPage > 1) {
+      endPage = startPage - 1;
+      startPage = Math.max(1, endPage - maxButtons + 1);
+      renderPagination(startPage, endPage);
+      paginationHandler();
+    } else {
+      console.log("最初のページです。");
+    }
+  });
+
+  nextButtonWrapper.addEventListener("click", () => {
+    if (endPage < totalPages) {
+      startPage = endPage + 1;
+      endPage = Math.min(totalPages, startPage + maxButtons - 1);
+      renderPagination(startPage, endPage);
+      paginationHandler();
+    } else {
+      console.log("最後のページです。");
+    }
+  });
 }
 
 createPagination();
