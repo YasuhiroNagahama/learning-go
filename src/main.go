@@ -47,7 +47,6 @@ func getMoviesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5500")
 	json.NewEncoder(w).Encode(apiResponse.Results)
 }
 
@@ -69,7 +68,6 @@ func getTotalPagesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5500")
 	json.NewEncoder(w).Encode(apiResponse.TotalPages)
 }
 
@@ -94,7 +92,6 @@ func getSearchHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5500")
 	json.NewEncoder(w).Encode(apiResponse.Results)
 }
 
@@ -104,14 +101,14 @@ func main() {
 	http.HandleFunc("/api/total_pages", getTotalPagesHandler)
 	http.HandleFunc("/api/search", getSearchHandler)
 
-	// // 静的ファイルのディレクトリを取得
-	// staticDir := "./"
+	// 静的ファイルのディレクトリを取得
+	staticDir := "./"
 
-	// // 静的ファイルを提供するためのハンドラを作成
-	// fs := http.FileServer(http.Dir(staticDir))
+	// 静的ファイルを提供するためのハンドラを作成
+	fs := http.FileServer(http.Dir(staticDir))
 
-	// // ハンドラをルートURLにマップ
-	// http.Handle("/", fs)
+	// ハンドラをルートURLにマップ
+	http.Handle("/", fs)
 
 	// // サーバーをポート8000で起動
 	log.Println("Starting server on :8000...")
