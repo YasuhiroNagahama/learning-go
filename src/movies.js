@@ -1,7 +1,7 @@
 window.onload = function () {
   const pageId = "1";
 
-  updateResult(pageId);
+  renderPageData(pageId);
 };
 
 async function getTotalPages() {
@@ -12,6 +12,18 @@ async function getTotalPages() {
   } catch (error) {
     console.error("Error fetching total pages:", error);
     return 0;
+  }
+}
+
+async function getPageData(pageId) {
+  try {
+    fetch(`http://localhost:8000/api/movies?page=${pageId}`)
+      .then((response) => response.json())
+      .then((data) => {
+        return data;
+      });
+  } catch (error) {
+    console.error("Error:", error);
   }
 }
 
@@ -62,22 +74,6 @@ function getBackButton() {
   return `<button class="move-button next-button"><</button>`;
 }
 
-function updateResult(pageId) {
-  try {
-    fetch(`http://localhost:8000/api/movies?page=${pageId}`)
-      .then((response) => response.json())
-      .then((data) => {
-        const list = document.getElementById("moviesList");
-        list.innerHTML = ``;
-        data.forEach((movie) => {
-          list.innerHTML += getMovieElement(movie);
-        });
-      });
-  } catch (error) {
-    console.error("Error:", error);
-  }
-}
-
 async function createPagination() {
   const totalPages = await getTotalPages(); // すべてのページを取得
   const maxButtons = 10; // ボタンの最大数を定義
@@ -95,6 +91,16 @@ async function createPagination() {
 }
 
 // レンダー
+
+async function renderPageData(pageId) {
+  const pageData = await getPageData(pageId);
+
+  const list = document.getElementById("moviesList");
+  list.innerHTML = ``;
+  pageData.forEach((movie) => {
+    list.innerHTML += getMovieElement(movie);
+  });
+}
 
 function renderPagination(startPage, endPage) {
   const paginationWrapper = document.getElementById("pagination");
@@ -122,7 +128,7 @@ function renderBackButton() {
 
 // ハンドラー
 
-function searchButtonHandler() {
+async function searchButtonHandler() {
   const searchButton = document.getElementById("searchButton");
 
   searchButton.addEventListener("click", async () => {
@@ -131,27 +137,23 @@ function searchButtonHandler() {
     const totalPages = await getTotalPages();
 
     const searchList = document.getElementById("searchList");
-    searchBox.innerHTML = ``;
+    searchList.innerHTML = ``;
 
     try {
       for (let i = 1; i <= totalPages; i++) {
         const pageNumber = String(i);
+        const pageData = await getPageData(i);
 
-        fetch(`http://localhost:8000/api/movies?page=${pageNumber}`)
-          .then((response) => response.json())
-          .then((data) => {
-            data.forEach((movie) => {
-              const formattedTitle = movie.title.toLowerCase();
+        pageData.forEach((movie) => {
+          const formattedTitle = movie.title.toLowerCase();
 
-              if (formattedTitle.includes(searchContent)) {
-                searchList.innerHTML += getMovieElement(movie);
-                console.log(
-                  "タイトル:" + movie.title + ", " + "ページ:" + pageNumber
-                );
-              }
-            });
-          })
-          .catch((error) => console.error("Error:", error));
+          if (formattedTitle.includes(searchContent)) {
+            searchList.innerHTML += getMovieElement(movie);
+            console.log(
+              "タイトル:" + movie.title + ", " + "ページ:" + pageNumber
+            );
+          }
+        });
       }
     } catch (error) {
       console.error("Error fetching search:", error);
@@ -169,7 +171,7 @@ function paginationHandler() {
     pageButtonWrapper.addEventListener("click", () => {
       const pageId = pageButtonWrapper.id;
 
-      updateResult(pageId);
+      renderPageData(pageId);
     });
   }
 }
@@ -206,3 +208,4 @@ function moveButtonHandler(start, end, totalPages, maxButtons) {
 
 createPagination();
 searchButtonHandler();
+console.log(1);
