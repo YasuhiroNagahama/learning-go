@@ -22,7 +22,6 @@ type Movie struct {
 	ReleaseDate   string `json:"release_date"`
 }
 
-// TMDB APIから映画の一覧を取得するハンドラ
 func getMoviesHandler(w http.ResponseWriter, r *http.Request) {
 	// クエリパラメーターからページ番号を取得
 	pageNumber := r.URL.Query().Get("page")
@@ -101,14 +100,9 @@ func main() {
 	http.HandleFunc("/api/total_pages", getTotalPagesHandler)
 	http.HandleFunc("/api/search", getSearchHandler)
 
-	// 静的ファイルのディレクトリを取得
-	staticDir := "./"
-
-	// 静的ファイルを提供するためのハンドラを作成
-	fs := http.FileServer(http.Dir(staticDir))
-
-	// ハンドラをルートURLにマップ
-	http.Handle("/", fs)
+    // http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+    //     http.ServeFile(w, r, "index.html")
+    // })
 
 	// // サーバーをポート8000で起動
 	log.Println("Starting server on :8000...")
